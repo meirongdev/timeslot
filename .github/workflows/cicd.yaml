@@ -3,8 +3,22 @@ name: CI/CD
 on:
   push:
     branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "backend/**"
+      - "Dockerfile"
+      - "deploy/**"
+      - "deploy/helm/**"
+      - "deploy/k8s/**"
   pull_request:
     branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "backend/**"
+      - "Dockerfile"
+      - "deploy/**"
+      - "deploy/helm/**"
+      - "deploy/k8s/**"
 
 jobs:
   build:
