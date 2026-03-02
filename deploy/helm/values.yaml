@@ -1,0 +1,23 @@
+image: "ghcr.io/meirongdev/timeslot:latest"
+service:
+  type: ClusterIP
+  port: 8080
+resources:
+  limits:
+    memory: 128Mi
+    cpu: 500m
+  requests:
+    memory: 64Mi
+    cpu: 50m
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+  mountPath: /data
+config:
+  adminUser: "admin"
+  adminPassword: "changeme"
+  slot_duration_min: 30
+  buffer_before_min: 120
+  max_days_ahead: 30
+  timezone: "Asia/Shanghai"

@@ -1,0 +1,5 @@
+apiVersion: v2
+name: timeslot
+version: 0.1.0
+description: Self-hosted calendar visibility system
+appVersion: "1.0.0"

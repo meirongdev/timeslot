@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeslot Hugo Sample</title>
+    <style>
+        .timeslot-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .timeslot-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #24292e;
+        }
+        .slot-list {
+            list-style: none;
+            padding: 0;
+        }
+        .slot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 1px solid #eaecef;
+        }
+        .slot-item.available {
+            background-color: #f6ffed;
+            border-color: #b7eb8f;
+        }
+        .slot-item.occupied {
+            background-color: #fff1f0;
+            border-color: #ffa39e;
+            color: #cf1322;
+        }
+        .slot-time {
+            font-weight: 500;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .badge-available {
+            background-color: #52c41a;
+            color: white;
+        }
+        .badge-occupied {
+            background-color: #f5222d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="timeslot-container">
+    <div class="timeslot-header">Upcoming Availability</div>
+    <div id="timeslot-loading">Loading slots...</div>
+    <ul id="slot-list" class="slot-list"></ul>
+</div>
+
+<script>
+    // Replace with your actual Timeslot service URL
+    const API_BASE = "https://timeslot.example.com/api";
+    const TIMEZONE = "Asia/Singapore"; // Display timezone for slots
+
+    async function fetchSchedule() {
+        try {
+            // Fetch the masked schedule (Available vs. Occupied)
+            const response = await fetch(`${API_BASE}/schedule`);
+            if (!response.ok) throw new Error("Failed to fetch schedule");
+            const slots = await response.json();
+            
+            renderSlots(slots);
+        } catch (error) {
+            document.getElementById('timeslot-loading').innerText = "Error loading schedule.";
+            console.error(error);
+        }
+    }
+
+    function renderSlots(slots) {
+        const list = document.getElementById('slot-list');
+        const loading = document.getElementById('timeslot-loading');
+        loading.style.display = 'none';
+        list.innerHTML = "";
+
+        slots.forEach(slot => {
+            const start = new Date(slot.start);
+            const isAvailable = slot.status === "available";
+            
+            const timeStr = start.toLocaleString([], { 
+                timeZone: TIMEZONE,
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+
+            const li = document.createElement('li');
+            li.className = `slot-item ${slot.status}`;
+            
+            li.innerHTML = `
+                <div class="slot-time">${timeStr}</div>
+                <div class="slot-status">
+                    <span class="status-badge ${isAvailable ? 'badge-available' : 'badge-occupied'}">
+                        ${isAvailable ? 'Available' : 'Occupied'}
+                    </span>
+                </div>
+            `;
+            list.appendChild(li);
+        });
+        
+        if (slots.length === 0) {
+            loading.style.display = 'block';
+            loading.innerText = "No slots available for the next 7 days.";
+        }
+    }
+
+    // Initial fetch
+    fetchSchedule();
+</script>
+
+</body>
+</html>

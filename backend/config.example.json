@@ -1,0 +1,10 @@
+{
+  "listen_addr": ":8080",
+  "db_path": "./timeslot.db",
+  "admin_user": "admin",
+  "admin_password": "changeme",
+  "slot_duration_min": 30,
+  "buffer_before_min": 0,
+  "max_days_ahead": 30,
+  "timezone": "Asia/Shanghai"
+}

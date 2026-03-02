@@ -1,0 +1,49 @@
+{{template "layout" .}}
+{{define "content"}}
+<div class="grid2">
+  <div class="card">
+    <h2>Quick Links</h2>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+      <li><a class="btn btn-primary" href="/admin/calendars">Manage Calendars</a></li>
+      <li><a class="btn btn-primary" href="/admin/availability">Manage Availability</a></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>API Endpoints</h2>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:12px;font-size:.85rem;">
+      <li><code>GET  /api/slots?from=&amp;to=</code></li>
+      <li><code>GET  /api/schedule?from=&amp;to=</code></li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <div class="cal-header">
+    <h2>{{.Current}}</h2>
+    <div style="font-size: 0.85rem; color: #666;">Merged View (All Calendars)</div>
+  </div>
+  <div class="cal-grid">
+    <div class="cal-grid-header">Sun</div>
+    <div class="cal-grid-header">Mon</div>
+    <div class="cal-grid-header">Tue</div>
+    <div class="cal-grid-header">Wed</div>
+    <div class="cal-grid-header">Thu</div>
+    <div class="cal-grid-header">Fri</div>
+    <div class="cal-grid-header">Sat</div>
+
+    {{range .Grid}}
+    <div class="cal-day {{if not .InMonth}}off-month{{end}} {{if .IsToday}}today{{end}}">
+      <span class="day-num">{{.Num}}</span>
+      <div class="ev-list">
+        {{range .Events}}
+        <div class="ev-item" title="{{.Title}} ({{index $.Calendar .CalendarID}})">
+          <span class="ev-time">{{.StartAt.Local.Format "15:04"}}-{{.EndAt.Local.Format "15:04"}}</span>
+          <span class="ev-title">{{.Title}}</span>
+        </div>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

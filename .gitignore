@@ -1,0 +1,48 @@
+# Go build artifacts
+/backend/timeslot
+/backend/timeslot.db
+/backend/timeslot.db-shm
+/backend/timeslot.db-wal
+/backend/*.log
+/backend/*.out
+/backend/*.test
+
+# Dependency directories
+/backend/vendor/
+
+# Config files (local, not versioned)
+/backend/config.json
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Hugo build output (if any)
+/public/
+
+# Docker artifacts
+*.tar
+
+# Test output
+/backend/coverage*
+/backend/*.prof
+
+# Node/npm (if used for Hugo widget)
+node_modules/
+
+# Misc
+*.log
+
+# Kubernetes manifests (keep in version control)
+!/deploy/k8s/
+
+# Docs (keep in version control)
+!/docs/

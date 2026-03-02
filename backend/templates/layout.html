@@ -1,0 +1,294 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Title}} — Timeslot Admin</title>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    nav {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    nav a {
+      color: #aad4f5;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    nav a:hover {
+      color: #fff;
+    }
+
+    nav .brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+      margin-right: auto;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      margin: 24px 0 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+    }
+
+    th,
+    td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: #f0f2f5;
+      font-weight: 600;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .1);
+      margin-bottom: 24px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    input[type=checkbox] {
+      width: auto;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.88rem;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #1a73e8;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #1558b0;
+    }
+
+    .btn-danger {
+      background: #d93025;
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: #a50e0e;
+    }
+
+    .btn-success {
+      background: #188038;
+      color: #fff;
+    }
+
+    .btn-success:hover {
+      background: #0f5223;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Calendar */
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      border-top: 1px solid #ddd;
+      border-left: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .cal-grid-header {
+      background: #f0f2f5;
+      font-weight: 600;
+      text-align: center;
+      padding: 8px;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .cal-day {
+      background: #fff;
+      min-height: 100px;
+      padding: 6px;
+      border-right: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+      position: relative;
+    }
+
+    .cal-day.off-month {
+      background: #fafafa;
+      color: #aaa;
+    }
+
+    .cal-day.today {
+      background: #f1f8ff;
+    }
+
+    .cal-day.today .day-num {
+      background: #1a73e8;
+      color: #fff;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .day-num {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+      display: inline-block;
+    }
+
+    .ev-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ev-item {
+      font-size: 0.65rem;
+      background: #e8f0fe;
+      color: #1967d2;
+      padding: 1px 4px;
+      border-radius: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-left: 2px solid #1a73e8;
+      display: flex;
+      gap: 4px;
+    }
+
+    .ev-item:hover {
+      background: #d2e3fc;
+      cursor: pointer;
+    }
+
+    .ev-time {
+      font-weight: 600;
+      color: #1a73e8;
+      flex-shrink: 0;
+    }
+
+    .ev-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <span class="brand">⏱ Timeslot</span>
+    <a href="/admin/">Dashboard</a>
+    <a href="/admin/calendars">Calendars</a>
+    <a href="/admin/availability">Availability</a>
+  </nav>
+  <main>
+    <h1>{{.Title}}</h1>
+    {{block "content" .}}{{end}}
+  </main>
+</body>
+
+</html>{{end}}

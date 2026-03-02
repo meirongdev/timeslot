@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "timeslot.fullname" . }}
+  labels:
+    {{- include "timeslot.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "timeslot.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "timeslot.selectorLabels" . | nindent 8 }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      initContainers:
+        - name: config-init
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              sed \
+                -e "s|\$(ADMIN_PASSWORD)|$ADMIN_PASSWORD|g" \
+                /config-template/config.json > /config/config.json
+          env:
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "timeslot.fullname" . }}-secrets
+                  key: admin_password
+          volumeMounts:
+            - name: config-template
+              mountPath: /config-template
+            - name: config-rendered
+              mountPath: /config
+
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image }}
+          args: ["-config", "/config/config.json"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: data
+              mountPath: {{ .Values.persistence.mountPath }}
+            - name: config-rendered
+              mountPath: /config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /admin/
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/slots
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+
+      volumes:
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "timeslot.fullname" . }}-pvc
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: config-template
+          configMap:
+            name: {{ include "timeslot.fullname" . }}-config
+        - name: config-rendered
+          emptyDir: {}

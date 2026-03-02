@@ -1,0 +1,97 @@
+{{template "layout" .}}
+{{define "content"}}
+{{if .Error}}
+<div
+  style="background:#fff1f0;border:1px solid #ffa39e;padding:12px;border-radius:4px;margin-bottom:16px;color:#cf1322;">
+  <strong>Sync Failed:</strong> {{.Error}}
+</div>
+{{end}}
+{{if .Success}}
+<div
+  style="background:#f6ffed;border:1px solid #b7eb8f;padding:12px;border-radius:4px;margin-bottom:16px;color:#389e0d;">
+  <strong>Success:</strong> Calendar synchronized successfully.
+</div>
+{{end}}
+<div class="card">
+  <h2>Add Calendar Source</h2>
+  <form method="POST" action="/admin/calendars">
+    <div class="grid2">
+      <div>
+        <label>Name</label>
+        <input type="text" name="name" required placeholder="My Google Calendar">
+      </div>
+      <div>
+        <label>Type</label>
+        <select name="type">
+          <option value="ical_url">iCal URL</option>
+          <option value="caldav">CalDAV</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <label>iCal / CalDAV URL</label>
+      <input type="url" name="url" required placeholder="https://calendar.google.com/calendar/ical/...">
+      <p style="font-size: 0.75rem; color: #666; margin-top: 4px;">
+        <strong>Tip for Google Calendar:</strong> If you get a 404, use the <em>"Secret address in iCal format"</em>
+        from your calendar's <em>"Settings and sharing"</em> &gt; <em>"Integrate calendar"</em> section.
+      </p>
+    </div>
+    <div>
+      <label>Credentials (optional, stored encrypted)</label>
+      <input type="text" name="credentials" placeholder="username:password">
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Sync Interval (minutes)</label>
+        <input type="number" name="sync_interval_min" value="30" min="5">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding-top:22px;">
+        <input type="checkbox" name="enabled" id="enabled" checked>
+        <label for="enabled" style="margin:0;">Enabled</label>
+      </div>
+    </div>
+    <div><button type="submit" class="btn btn-primary">Add Calendar</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Registered Calendars</h2>
+  {{if .Calendars}}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>URL</th>
+        <th>Interval</th>
+        <th>Last Synced</th>
+        <th>Enabled</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Calendars}}
+      <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Name}}</td>
+        <td>{{.Type}}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{.URL}}">{{.URL}}
+        </td>
+        <td>{{.SyncIntervalMin}}m</td>
+        <td>{{if .LastSyncedAt}}{{.LastSyncedAt.Format "2006-01-02 15:04"}}{{else}}Never{{end}}</td>
+        <td>{{if .Enabled}}✅{{else}}❌{{end}}</td>
+        <td class="actions">
+          <a class="btn btn-primary btn-sm" href="/admin/calendars/sync/{{.ID}}">Sync Now</a>
+          <a class="btn btn-danger btn-sm" href="/admin/calendars/delete/{{.ID}}"
+            onclick="return confirm('Delete this calendar?')">Delete</a>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p style="color:#888;margin-top:8px;">No calendars yet. Add one above.</p>
+  {{end}}
+</div>
+{{end}}

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: timeslot-config
+  namespace: timeslot
+data:
+  config.json: |
+    {
+      "listen_addr":       ":8080",
+      "db_path":           "/data/timeslot.db",
+      "admin_user":        "admin",
+      "admin_password":    "$(ADMIN_PASSWORD)",
+      "slot_duration_min": 30,
+      "buffer_before_min": 120,
+      "max_days_ahead":    30,
+      "timezone":          "Asia/Shanghai"
+    }

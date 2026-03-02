@@ -1,0 +1,65 @@
+{{template "layout" .}}
+{{define "content"}}
+<div class="card">
+  <h2>Add Availability Rule</h2>
+  <form method="POST" action="/admin/availability">
+    <div class="grid2">
+      <div>
+        <label>Weekday</label>
+        <select name="weekday">
+          {{range $i, $d := .Weekdays}}
+          <option value="{{$i}}">{{$d}}</option>
+          {{end}}
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label>Start Time</label>
+          <input type="time" name="start_time" value="09:00" required>
+        </div>
+        <div>
+          <label>End Time</label>
+          <input type="time" name="end_time" value="17:00" required>
+        </div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div>
+        <label>Valid From (optional)</label>
+        <input type="date" name="valid_from">
+      </div>
+      <div>
+        <label>Valid Until (optional)</label>
+        <input type="date" name="valid_until">
+      </div>
+    </div>
+    <div><button type="submit" class="btn btn-primary">Add Rule</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Current Rules</h2>
+  {{if .Rules}}
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Weekday</th><th>Start</th><th>End</th><th>Valid From</th><th>Valid Until</th><th></th></tr>
+    </thead>
+    <tbody>
+    {{range .Rules}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{index $.Weekdays .Weekday}}</td>
+      <td>{{.StartTime}}</td>
+      <td>{{.EndTime}}</td>
+      <td>{{if .ValidFrom}}{{.ValidFrom.Format "2006-01-02"}}{{else}}—{{end}}</td>
+      <td>{{if .ValidUntil}}{{.ValidUntil.Format "2006-01-02"}}{{else}}—{{end}}</td>
+      <td><a class="btn btn-danger btn-sm" href="/admin/availability/delete/{{.ID}}" onclick="return confirm('Delete rule?')">Delete</a></td>
+    </tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p style="color:#888;margin-top:8px;">No rules yet. Add weekly availability above.</p>
+  {{end}}
+</div>
+{{end}}
