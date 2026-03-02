@@ -1,8 +1,7 @@
-image: "ghcr.io/meirongdev/timeslot:latest"
+image: "ghcr.io/meirongdev/timeslot/timeslot:latest"
 service:
   type: ClusterIP
   port: 8080
-resources:
   limits:
     memory: 128Mi
     cpu: 500m
