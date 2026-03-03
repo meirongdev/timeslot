@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: timeslot
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/meirongdev/timeslot.git'
+    targetRevision: HEAD
+    path: deploy/helm
+    helm:
+      valueFiles:
+        - values.yaml
+      parameters:
+        - name: image.repository
+          value: ghcr.io/meirongdev/timeslot
+        - name: image.tag
+          value: latest
+        - name: config.adminPassword
+          value: "your-strong-password"
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: timeslot
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/spec/containers/0/image

@@ -19,6 +19,17 @@
             margin-bottom: 16px;
             color: #24292e;
         }
+        .date-group {
+            margin-bottom: 20px;
+        }
+        .date-header {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #586069;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e1e4e8;
+        }
         .slot-list {
             list-style: none;
             padding: 0;
@@ -31,15 +42,8 @@
             margin-bottom: 8px;
             border-radius: 6px;
             border: 1px solid #eaecef;
-        }
-        .slot-item.available {
             background-color: #f6ffed;
             border-color: #b7eb8f;
-        }
-        .slot-item.occupied {
-            background-color: #fff1f0;
-            border-color: #ffa39e;
-            color: #cf1322;
         }
         .slot-time {
             font-weight: 500;
@@ -50,37 +54,95 @@
             border-radius: 4px;
             font-weight: 600;
             text-transform: uppercase;
-        }
-        .badge-available {
             background-color: #52c41a;
             color: white;
         }
-        .badge-occupied {
-            background-color: #f5222d;
-            color: white;
+        .book-link {
+            font-size: 0.85rem;
+            color: #1890ff;
+            text-decoration: none;
+            margin-left: 10px;
+        }
+        .book-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
 <div class="timeslot-container">
-    <div class="timeslot-header">Upcoming Availability</div>
+    <div class="timeslot-header">可预约时间 / Upcoming Availability</div>
     <div id="timeslot-loading">Loading slots...</div>
-    <ul id="slot-list" class="slot-list"></ul>
+    <div id="slot-groups"></div>
+    <p style="margin-top: 16px; color: #666; font-size: 0.9rem;">
+        请发送邮件至 <a href="mailto:meirongdev@gmail.com?subject=预约申请">meirongdev@gmail.com</a> 预约时间。
+    </p>
 </div>
 
 <script>
-    // Replace with your actual Timeslot service URL
-    const API_BASE = "https://timeslot.example.com/api";
-    const TIMEZONE = "Asia/Singapore"; // Display timezone for slots
+    const API_BASE = "https://slot.meirong.dev";
+    const TIMEZONE = "Asia/Shanghai";
 
-    async function fetchSchedule() {
+    function formatDateRFC3339(date) {
+        return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
+    }
+
+    function getDateRange() {
+        const now = new Date();
+        const to = new Date(now);
+        to.setDate(to.getDate() + 14);
+        return {
+            from: formatDateRFC3339(now),
+            to: formatDateRFC3339(to)
+        };
+    }
+
+    function groupByDate(slots) {
+        const groups = {};
+        slots.forEach(slot => {
+            const date = new Date(slot.start);
+            const dateKey = date.toLocaleDateString('zh-CN', {
+                timeZone: TIMEZONE,
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            if (!groups[dateKey]) {
+                groups[dateKey] = [];
+            }
+            groups[dateKey].push(slot);
+        });
+        return groups;
+    }
+
+    function formatTimeRange(slot) {
+        const start = new Date(slot.start);
+        const end = new Date(slot.end);
+        
+        const startStr = start.toLocaleTimeString([], {
+            timeZone: TIMEZONE,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        const endStr = end.toLocaleTimeString([], {
+            timeZone: TIMEZONE,
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `${startStr} - ${endStr}`;
+    }
+
+    async function fetchSlots() {
         try {
-            // Fetch the masked schedule (Available vs. Occupied)
-            const response = await fetch(`${API_BASE}/schedule`);
-            if (!response.ok) throw new Error("Failed to fetch schedule");
-            const slots = await response.json();
+            const { from, to } = getDateRange();
+            const url = `${API_BASE}/api/slots?from=${from}&to=${to}`;
             
+            const response = await fetch(url);
+            if (!response.ok) throw new Error("Failed to fetch slots");
+            
+            const slots = await response.json();
             renderSlots(slots);
         } catch (error) {
             document.getElementById('timeslot-loading').innerText = "Error loading schedule.";
@@ -89,46 +151,55 @@
     }
 
     function renderSlots(slots) {
-        const list = document.getElementById('slot-list');
+        const container = document.getElementById('slot-groups');
         const loading = document.getElementById('timeslot-loading');
-        loading.style.display = 'none';
-        list.innerHTML = "";
-
-        slots.forEach(slot => {
-            const start = new Date(slot.start);
-            const isAvailable = slot.status === "available";
-            
-            const timeStr = start.toLocaleString([], { 
-                timeZone: TIMEZONE,
-                weekday: 'short', 
-                month: 'short', 
-                day: 'numeric', 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-
-            const li = document.createElement('li');
-            li.className = `slot-item ${slot.status}`;
-            
-            li.innerHTML = `
-                <div class="slot-time">${timeStr}</div>
-                <div class="slot-status">
-                    <span class="status-badge ${isAvailable ? 'badge-available' : 'badge-occupied'}">
-                        ${isAvailable ? 'Available' : 'Occupied'}
-                    </span>
-                </div>
-            `;
-            list.appendChild(li);
-        });
         
-        if (slots.length === 0) {
+        if (!slots || slots.length === 0) {
             loading.style.display = 'block';
-            loading.innerText = "No slots available for the next 7 days.";
+            loading.innerText = "No slots available for the next 14 days.";
+            return;
         }
+        
+        loading.style.display = 'none';
+        container.innerHTML = "";
+
+        const groups = groupByDate(slots);
+        
+        Object.keys(groups).forEach(dateKey => {
+            const dateGroup = document.createElement('div');
+            dateGroup.className = 'date-group';
+            
+            const header = document.createElement('div');
+            header.className = 'date-header';
+            header.textContent = dateKey;
+            dateGroup.appendChild(header);
+            
+            const ul = document.createElement('ul');
+            ul.className = 'slot-list';
+            
+            groups[dateKey].forEach(slot => {
+                const li = document.createElement('li');
+                li.className = 'slot-item';
+                
+                const timeRange = formatTimeRange(slot);
+                const subject = encodeURIComponent('预约申请');
+                
+                li.innerHTML = `
+                    <div class="slot-time">${timeRange}</div>
+                    <div>
+                        <span class="status-badge">空闲</span>
+                        <a href="mailto:meirongdev@gmail.com?subject=${subject}" class="book-link">预约</a>
+                    </div>
+                `;
+                ul.appendChild(li);
+            });
+            
+            dateGroup.appendChild(ul);
+            container.appendChild(dateGroup);
+        });
     }
 
-    // Initial fetch
-    fetchSchedule();
+    fetchSlots();
 </script>
 
 </body>
